@@ -18,7 +18,7 @@ public class MembersService {
     private String generateMemberCode() {
         Members lastMember = membersRepo.findTopByOrderByIdDesc().orElse(null);
         int nextNumber = (lastMember == null) ? 1 : lastMember.getId().intValue() + 1;
-        return String.format("MB%05d", nextNumber);
+        return String.format("MB%04d", nextNumber);
     }
 
     private MembersRes mapToRes(Members member) {
@@ -75,15 +75,37 @@ public class MembersService {
         Members member = membersRepo.findByMemberCodeAndDeletedAtIsNull(memberCode)
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        membersRepo.findByEmailAndDeletedAtIsNull(dto.getEmail()).filter(m -> !m.getId().equals(member.getId()))
-                .ifPresent(m -> {
-                    throw new RuntimeException("Email is already exists");
-                });
+        if (dto.getName() != null) {
+            if (dto.getName().isBlank()) {
+                throw new RuntimeException("Name cannot be empty");
+            }
+            member.setName(dto.getName());
+        }
 
-        member.setName(dto.getName());
-        member.setEmail(dto.getEmail());
-        member.setPhone(dto.getPhone());
-        member.setAddress(dto.getAddress());
+        if (dto.getEmail() != null) {
+            if (dto.getEmail().isBlank()) {
+                throw new RuntimeException("Email cannot be empty");
+            }
+            membersRepo.findByEmailAndDeletedAtIsNull(dto.getEmail()).filter(m -> !m.getId().equals(member.getId()))
+                    .ifPresent(m -> {
+                        throw new RuntimeException("Email is already exists");
+                    });
+            member.setEmail(dto.getEmail());
+        }
+
+        if (dto.getPhone() != null) {
+            if (dto.getPhone().isBlank()) {
+                throw new RuntimeException("Phone cannot be empty");
+            }
+            member.setPhone(dto.getPhone());
+        }
+
+        if (dto.getAddress() != null) {
+            if (dto.getAddress().isBlank()) {
+                throw new RuntimeException("Address cannot be empty");
+            }
+            member.setAddress(dto.getAddress());
+        }
 
         membersRepo.save(member);
 
