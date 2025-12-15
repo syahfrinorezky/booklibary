@@ -14,7 +14,19 @@ public interface BorrowRepo extends JpaRepository<Borrow, Long> {
 
     List<Borrow> findByMemberIdAndDeletedAtIsNull(Long memberId);
 
+    long countByMemberIdAndStatusAndDeletedAtIsNull(Long memberId, BorrowStatus status);
+
     List<Borrow> findByBookIdAndDeletedAtIsNull(Long bookId);
+
+    Optional<Borrow> findTopByOrderByIdDesc();
+
+    boolean existsByBookIdAndStatusAndDeletedAtIsNull(Long bookId, BorrowStatus status);
+
+    Optional<Borrow> findByBookIdAndStatusAndDeletedAtIsNull(Long bookId, BorrowStatus status);
+
+    List<Borrow> findByReturnDateIsNullAndDeletedAtIsNull();
+
+    List<Borrow> findByReturnDateIsNotNullAndDeletedAtIsNull();
 
     List<Borrow> findAllByDeletedAtIsNull();
 }
