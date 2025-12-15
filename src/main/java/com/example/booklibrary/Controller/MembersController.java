@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/api/members")
@@ -31,7 +30,6 @@ public class MembersController {
     }
 
     @GetMapping
-
     public ResponseEntity<ApiResponse<List<MembersRes>>> getAllMembers() {
         List<MembersRes> members = membersService.getAllMembers();
         return ResponseEntity.ok(new ApiResponse<>(true, "Members retrieved successfully", members));
@@ -50,10 +48,10 @@ public class MembersController {
     }
 
     @PatchMapping("/{memberCode}")
-    public ResponseEntity<MembersRes> updateMember(@PathVariable String memberCode,
+    public ResponseEntity<ApiResponse<MembersRes>> updateMember(@PathVariable String memberCode,
             @RequestBody @Valid MembersReq dto) {
         MembersRes updated = membersService.updateMember(memberCode, dto);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Member updated successfully", updated));
     }
 
     @DeleteMapping("/{memberCode}")
