@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.example.booklibrary.Dto.Categories.CategoriesReq;
 import com.example.booklibrary.Dto.Categories.CategoriesRes;
 import com.example.booklibrary.Model.Categories;
 import com.example.booklibrary.Repo.CategoriesRepo;
@@ -43,8 +44,9 @@ public class CategoriesService {
         return mapToRes(category);
     }
 
-    public CategoriesRes createCategory(CategoriesRes dto) {
-        if (categoriesRepo.findByCategoryCodeAndDeletedAtIsNull(dto.getCategoryCode()).isPresent()) {
+    public CategoriesRes createCategory(CategoriesReq dto) {
+        if (dto.getCategoryCode() != null
+                && categoriesRepo.findByCategoryCodeAndDeletedAtIsNull(dto.getCategoryCode()).isPresent()) {
             throw new RuntimeException("Category code already exists");
         }
 
@@ -61,12 +63,14 @@ public class CategoriesService {
         return mapToRes(savedCategory);
     }
 
-    public CategoriesRes updateCategory(String categoryCode, CategoriesRes dto) {
+    public CategoriesRes updateCategory(String categoryCode, CategoriesReq dto) {
         Categories category = categoriesRepo.findByCategoryCodeAndDeletedAtIsNull(categoryCode)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        category.setName(dto.getName());
-        category.setDescription(dto.getDescription());
+        if (dto.getName() != null)
+            category.setName(dto.getName());
+        if (dto.getDescription() != null)
+            category.setDescription(dto.getDescription());
 
         Categories updatedCategory = categoriesRepo.save(category);
         return mapToRes(updatedCategory);
