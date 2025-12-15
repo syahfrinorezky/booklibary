@@ -15,5 +15,7 @@ public interface BooksRepo extends JpaRepository<Books, Long> {
 
     List<Books> findByAuthorContainingIgnoreCaseAndDeletedAtIsNull(String author);
 
+    Optional<Books> findTopByOrderByIdDesc();
+
     List<Books> findAllByDeletedAtIsNull();
 }
