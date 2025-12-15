@@ -48,10 +48,10 @@ public class MembersController {
     }
 
     @PatchMapping("/{memberCode}")
-    public ResponseEntity<MembersRes> updateMember(@PathVariable String memberCode,
+    public ResponseEntity<ApiResponse<MembersRes>> updateMember(@PathVariable String memberCode,
             @RequestBody @Valid MembersReq dto) {
         MembersRes updated = membersService.updateMember(memberCode, dto);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Member updated successfully", updated));
     }
 
     @DeleteMapping("/{memberCode}")
