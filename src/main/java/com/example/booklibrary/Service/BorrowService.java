@@ -101,6 +101,12 @@ public class BorrowService {
         return mapToPageResponse(borrowPage);
     }
 
+    public BorrowRes getBorrowByCode(String borrowCode) {
+        Borrow borrow = borrowRepo.findByBorrowCodeAndDeletedAtIsNull(borrowCode)
+                .orElseThrow(() -> new RuntimeException("Borrow record not found"));
+        return mapToRes(borrow);
+    }
+
     private PageResponse<BorrowRes> mapToPageResponse(Page<Borrow> borrowPage) {
         List<BorrowRes> borrowResList = borrowPage.getContent().stream()
                 .map(this::mapToRes)
@@ -161,8 +167,8 @@ public class BorrowService {
     }
 
     @Transactional
-    public BorrowRes returnBook(ReturnReq req) {
-        Borrow borrow = borrowRepo.findByBorrowCodeAndDeletedAtIsNull(req.getBorrowCode())
+    public BorrowRes returnBook(String borrowCode, ReturnReq req) {
+        Borrow borrow = borrowRepo.findByBorrowCodeAndDeletedAtIsNull(borrowCode)
                 .orElseThrow(() -> new RuntimeException("Borrow record not found"));
 
         if (borrow.getStatus() == BorrowStatus.RETURNED) {
@@ -194,5 +200,20 @@ public class BorrowService {
 
         borrowRepo.save(borrow);
         return mapToRes(borrow);
+    }
+
+    @Transactional
+    public void deleteBorrow(String borrowCode) {
+        Borrow borrow = borrowRepo.findByBorrowCodeAndDeletedAtIsNull(borrowCode)
+                .orElseThrow(() -> new RuntimeException("Borrow record not found"));
+
+        if (borrow.getStatus() == BorrowStatus.BORROWED) {
+            Books book = borrow.getBook();
+            book.setStock(book.getStock() + 1);
+            booksRepo.save(book);
+        }
+
+        borrow.setDeletedAt(LocalDateTime.now());
+        borrowRepo.save(borrow);
     }
 }
