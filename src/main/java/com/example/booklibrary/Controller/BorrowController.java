@@ -3,7 +3,9 @@ package com.example.booklibrary.Controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,15 +55,29 @@ public class BorrowController {
         return ResponseEntity.ok(new ApiResponse<>(true, "Returned borrows history retrieved successfully", borrows));
     }
 
-    @PostMapping("/borrow")
+    @GetMapping("/{borrowCode}")
+    public ResponseEntity<ApiResponse<BorrowRes>> getBorrowByCode(@PathVariable String borrowCode) {
+        BorrowRes borrow = borrowService.getBorrowByCode(borrowCode);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Borrow record retrieved successfully", borrow));
+    }
+
+    @PostMapping
     public ResponseEntity<ApiResponse<BorrowRes>> borrowBook(@RequestBody @Valid BorrowReq req) {
         BorrowRes borrow = borrowService.borrowBook(req);
         return ResponseEntity.ok(new ApiResponse<>(true, "Book borrowed successfully", borrow));
     }
 
-    @PostMapping("/return")
-    public ResponseEntity<ApiResponse<BorrowRes>> returnBook(@RequestBody @Valid ReturnReq req) {
-        BorrowRes borrow = borrowService.returnBook(req);
+    @PatchMapping("/{borrowCode}")
+    public ResponseEntity<ApiResponse<BorrowRes>> returnBook(
+            @PathVariable String borrowCode,
+            @RequestBody @Valid ReturnReq req) {
+        BorrowRes borrow = borrowService.returnBook(borrowCode, req);
         return ResponseEntity.ok(new ApiResponse<>(true, "Book returned successfully", borrow));
+    }
+
+    @DeleteMapping("/{borrowCode}")
+    public ResponseEntity<ApiResponse<Void>> deleteBorrow(@PathVariable String borrowCode) {
+        borrowService.deleteBorrow(borrowCode);
+        return ResponseEntity.ok(new ApiResponse<>(true, "Borrow record deleted successfully", null));
     }
 }
