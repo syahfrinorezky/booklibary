@@ -13,8 +13,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @Builder
 public class ReturnReq {
-    @NotBlank(message = "Borrow code is required")
-    private String borrowCode;
-
     private String returnNotes;
 }
