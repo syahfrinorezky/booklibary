@@ -2,8 +2,14 @@ package com.example.booklibrary.Service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.booklibrary.Dto.ApiResponse.PageResponse;
+import com.example.booklibrary.Dto.ApiResponse.PaginationMeta;
 import com.example.booklibrary.Dto.Members.MembersReq;
 import com.example.booklibrary.Dto.Members.MembersRes;
 import com.example.booklibrary.Model.Members;
@@ -40,6 +46,27 @@ public class MembersService {
     public List<MembersRes> getAllMembers() {
         List<Members> members = membersRepo.findAllByDeletedAtIsNull();
         return members.stream().map(this::mapToRes).toList();
+    }
+
+    public PageResponse<MembersRes> getAllMembers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Members> membersPage = membersRepo.findAllByDeletedAtIsNull(pageable);
+
+        List<MembersRes> membersResList = membersPage.getContent().stream()
+                .map(this::mapToRes)
+                .toList();
+
+        PaginationMeta meta = PaginationMeta.builder()
+                .page(membersPage.getNumber())
+                .size(membersPage.getSize())
+                .totalPages(membersPage.getTotalPages())
+                .totalElements(membersPage.getTotalElements())
+                .build();
+
+        return PageResponse.<MembersRes>builder()
+                .content(membersResList)
+                .meta(meta)
+                .build();
     }
 
     public MembersRes getMemberByCode(String memberCode) {

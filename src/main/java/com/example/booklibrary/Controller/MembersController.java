@@ -1,9 +1,11 @@
 package com.example.booklibrary.Controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.booklibrary.Dto.ApiResponse.ApiResponse;
+import com.example.booklibrary.Dto.ApiResponse.PageResponse;
 import com.example.booklibrary.Dto.Members.MembersReq;
 import com.example.booklibrary.Dto.Members.MembersRes;
 import com.example.booklibrary.Service.MembersService;
@@ -30,8 +32,10 @@ public class MembersController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<MembersRes>>> getAllMembers() {
-        List<MembersRes> members = membersService.getAllMembers();
+    public ResponseEntity<ApiResponse<PageResponse<MembersRes>>> getAllMembers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        PageResponse<MembersRes> members = membersService.getAllMembers(page, size);
         return ResponseEntity.ok(new ApiResponse<>(true, "Members retrieved successfully", members));
     }
 

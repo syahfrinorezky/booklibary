@@ -5,8 +5,14 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.booklibrary.Dto.ApiResponse.PageResponse;
+import com.example.booklibrary.Dto.ApiResponse.PaginationMeta;
 import com.example.booklibrary.Dto.Borrows.BorrowReq;
 import com.example.booklibrary.Dto.Borrows.BorrowRes;
 import com.example.booklibrary.Dto.Borrows.ReturnReq;
@@ -65,16 +71,52 @@ public class BorrowService {
                 .toList();
     }
 
+    public PageResponse<BorrowRes> getAllBorrows(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("borrowDate").descending());
+        Page<Borrow> borrowPage = borrowRepo.findAllByDeletedAtIsNull(pageable);
+        return mapToPageResponse(borrowPage);
+    }
+
     public List<BorrowRes> getActiveBorrows() {
-        return borrowRepo.findByReturnDateIsNullAndDeletedAtIsNull().stream()
+        return borrowRepo.findByStatusAndDeletedAtIsNull(BorrowStatus.BORROWED).stream()
                 .map(this::mapToRes)
                 .toList();
     }
 
+    public PageResponse<BorrowRes> getActiveBorrows(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("borrowDate").descending());
+        Page<Borrow> borrowPage = borrowRepo.findByStatusAndDeletedAtIsNull(BorrowStatus.BORROWED, pageable);
+        return mapToPageResponse(borrowPage);
+    }
+
     public List<BorrowRes> getBorrowHistory() {
-        return borrowRepo.findByReturnDateIsNotNullAndDeletedAtIsNull().stream()
+        return borrowRepo.findByStatusAndDeletedAtIsNull(BorrowStatus.RETURNED).stream()
                 .map(this::mapToRes)
                 .toList();
+    }
+
+    public PageResponse<BorrowRes> getBorrowHistory(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("returnDate").descending());
+        Page<Borrow> borrowPage = borrowRepo.findByStatusAndDeletedAtIsNull(BorrowStatus.RETURNED, pageable);
+        return mapToPageResponse(borrowPage);
+    }
+
+    private PageResponse<BorrowRes> mapToPageResponse(Page<Borrow> borrowPage) {
+        List<BorrowRes> borrowResList = borrowPage.getContent().stream()
+                .map(this::mapToRes)
+                .toList();
+
+        PaginationMeta meta = PaginationMeta.builder()
+                .page(borrowPage.getNumber())
+                .size(borrowPage.getSize())
+                .totalPages(borrowPage.getTotalPages())
+                .totalElements(borrowPage.getTotalElements())
+                .build();
+
+        return PageResponse.<BorrowRes>builder()
+                .content(borrowResList)
+                .meta(meta)
+                .build();
     }
 
     @Transactional

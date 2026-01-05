@@ -2,8 +2,14 @@ package com.example.booklibrary.Service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.booklibrary.Dto.ApiResponse.PageResponse;
+import com.example.booklibrary.Dto.ApiResponse.PaginationMeta;
 import com.example.booklibrary.Dto.Categories.CategoriesReq;
 import com.example.booklibrary.Dto.Categories.CategoriesRes;
 import com.example.booklibrary.Model.Categories;
@@ -36,6 +42,27 @@ public class CategoriesService {
     public List<CategoriesRes> getAllCategories() {
         List<Categories> categories = categoriesRepo.findAllByDeletedAtIsNull();
         return categories.stream().map(this::mapToRes).toList();
+    }
+
+    public PageResponse<CategoriesRes> getAllCategories(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Categories> categoriesPage = categoriesRepo.findAllByDeletedAtIsNull(pageable);
+
+        List<CategoriesRes> categoriesResList = categoriesPage.getContent().stream()
+                .map(this::mapToRes)
+                .toList();
+
+        PaginationMeta meta = PaginationMeta.builder()
+                .page(categoriesPage.getNumber())
+                .size(categoriesPage.getSize())
+                .totalPages(categoriesPage.getTotalPages())
+                .totalElements(categoriesPage.getTotalElements())
+                .build();
+
+        return PageResponse.<CategoriesRes>builder()
+                .content(categoriesResList)
+                .meta(meta)
+                .build();
     }
 
     public CategoriesRes getCategoryByCode(String categoryCode) {

@@ -3,8 +3,14 @@ package com.example.booklibrary.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.booklibrary.Dto.ApiResponse.PageResponse;
+import com.example.booklibrary.Dto.ApiResponse.PaginationMeta;
 import com.example.booklibrary.Dto.Books.BooksReq;
 import com.example.booklibrary.Dto.Books.BooksRes;
 import com.example.booklibrary.Model.Books;
@@ -50,6 +56,27 @@ public class BooksService {
         return booksRepo.findAllByDeletedAtIsNull().stream()
                 .map(this::mapToRes)
                 .toList();
+    }
+
+    public PageResponse<BooksRes> getAllBooks(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<Books> booksPage = booksRepo.findAllByDeletedAtIsNull(pageable);
+
+        List<BooksRes> booksResList = booksPage.getContent().stream()
+                .map(this::mapToRes)
+                .toList();
+
+        PaginationMeta meta = PaginationMeta.builder()
+                .page(booksPage.getNumber())
+                .size(booksPage.getSize())
+                .totalPages(booksPage.getTotalPages())
+                .totalElements(booksPage.getTotalElements())
+                .build();
+
+        return PageResponse.<BooksRes>builder()
+                .content(booksResList)
+                .meta(meta)
+                .build();
     }
 
     public BooksRes getBookByCode(String bookCode) {

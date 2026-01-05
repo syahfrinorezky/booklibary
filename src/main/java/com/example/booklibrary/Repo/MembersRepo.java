@@ -3,6 +3,8 @@ package com.example.booklibrary.Repo;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.booklibrary.Model.Members;
@@ -15,4 +17,6 @@ public interface MembersRepo extends JpaRepository<Members, Long> {
     Optional<Members> findTopByOrderByIdDesc();
 
     List<Members> findAllByDeletedAtIsNull();
+
+    Page<Members> findAllByDeletedAtIsNull(Pageable pageable);
 }
