@@ -1,5 +1,6 @@
 package com.example.booklibrary.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -107,6 +108,7 @@ public class CategoriesService {
         Categories category = categoriesRepo.findByCategoryCodeAndDeletedAtIsNull(categoryCode)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
-        categoriesRepo.delete(category);
+        category.setDeletedAt(LocalDateTime.now());
+        categoriesRepo.save(category);
     }
 }
